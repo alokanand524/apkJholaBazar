@@ -4,7 +4,7 @@
     "slug": "jhola-bazar",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/jhola-bazar1.png",
     "scheme": "jholabazar",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,9 +14,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-  "foregroundImage": "./assets/images/jhola-bazar.png",
-  "backgroundImage": "./assets/images/jhola-bazar.png",
-  "monochromeImage": "./assets/images/jhola-bazar.png"
+        "foregroundImage": "./assets/images/jhola-bazar1.png",
+        "backgroundImage": "./assets/images/jhola-bazar.png",
+        "monochromeImage": "./assets/images/jhola-bazar.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -24,7 +24,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/jhola-bazar1.png"
     },
     "plugins": [
       "expo-router",
