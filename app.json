@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "Jhola Bazar",
+    "slug": "jhola-bazar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "jholabazar",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+  "foregroundImage": "./assets/images/jhola-bazar.png",
+  "backgroundImage": "./assets/images/jhola-bazar.png",
+  "monochromeImage": "./assets/images/jhola-bazar.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.jholabazar.app"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-screen.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "provider": "google",
+          "googleMapsApiKey": "AIzaSyA_0odOsTGuRjXcgoq_D7_ZBNuCxblh2a0"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c77f147a-c2bd-4d7e-b3bc-91f3eaa0ae24"
+      }
+    },
+    "owner": "vikas10237"
+  }
+}
