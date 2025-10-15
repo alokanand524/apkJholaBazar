@@ -1,26 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { Colors } from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
+  BackHandler,
+  Dimensions,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-  Dimensions,
-  BackHandler,
+  View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
+import { Gesture as GestureType } from 'react-native-gesture-handler';
+import {
   runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
 // import { tawkApi, ChatMessage } from '@/utils/tawkApi';
 
 interface ChatMessage {
@@ -76,6 +78,14 @@ export default function ChatWidget({ visible, onClose }: ChatWidgetProps) {
         });
       } else {
         translateX.value = withSpring(0);
+      }
+    });
+
+  const backGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .onUpdate((event) => {
+      if (event.translationX > 50 && event.absoluteX < 50) {
+        runOnJS(onClose)();
       }
     });
 
@@ -178,39 +188,37 @@ export default function ChatWidget({ visible, onClose }: ChatWidgetProps) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <TouchableOpacity 
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <GestureDetector gesture={panGesture}>
-          <KeyboardAvoidingView 
-            style={styles.keyboardContainer}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-          >
-          <TouchableOpacity 
-            style={[styles.container, animatedStyle]}
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-          >
+      <View style={styles.modalOverlay}>
+          <GestureDetector gesture={Gesture.Simultaneous(panGesture, backGesture)}>
+            <SafeAreaView 
+              style={[styles.container, animatedStyle]}
+            >
+            <KeyboardAvoidingView 
+              style={styles.content}
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              keyboardVerticalOffset={0}
+            >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Support Chat</Text>
-          <TouchableOpacity onPress={onClose}>
-            <Ionicons name="close" size={24} color={Colors.light.text} />
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={Colors.light.text} />
           </TouchableOpacity>
+          <Text style={styles.headerTitle}>Support Chat</Text>
+          <View style={styles.placeholder} />
         </View>
 
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessage}
-          keyExtractor={item => item.id}
-          style={styles.messagesList}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
+        <View style={styles.messagesContainer}>
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={item => item.id}
+            style={styles.messagesList}
+            contentContainerStyle={styles.messagesContent}
+            showsVerticalScrollIndicator={false}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+            onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          />
+        </View>
 
         {loading && (
           <View style={styles.typingIndicator}>
@@ -235,10 +243,10 @@ export default function ChatWidget({ visible, onClose }: ChatWidgetProps) {
               <Ionicons name="send" size={20} color="#fff" />
             </TouchableOpacity>
           </View>
-          </TouchableOpacity>
             </KeyboardAvoidingView>
-        </GestureDetector>
-      </TouchableOpacity>
+            </SafeAreaView>
+          </GestureDetector>
+      </View>
     </Modal>
   );
 }
@@ -249,38 +257,56 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
+
   container: {
-    height: '70%',
+    height: '100%',
     backgroundColor: Colors.light.background,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
   },
-  keyboardContainer: {
+  content: {
     flex: 1,
-    justifyContent: 'flex-end',
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: Colors.light.text,
+    flex: 1,
+    textAlign: 'center',
+  },
+  backButton: {
+    padding: 8,
+    width: 40,
+  },
+  placeholder: {
+    width: 40,
+  },
+  messagesContainer: {
+    flex: 1,
   },
   messagesList: {
     flex: 1,
-    padding: 16,
+  },
+  messagesContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   messageContainer: {
-    maxWidth: '80%',
-    marginVertical: 4,
-    padding: 12,
-    borderRadius: 16,
+    maxWidth: '85%',
+    marginVertical: 3,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 18,
   },
   userMessage: {
     alignSelf: 'flex-end',
@@ -300,23 +326,28 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: Colors.light.border,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingBottom: 16,
+    backgroundColor: '#fff',
     alignItems: 'flex-end',
-    backgroundColor: Colors.light.background,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   textInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: Colors.light.border,
-    borderRadius: 20,
+    borderColor: '#e0e0e0',
+    borderRadius: 24,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginRight: 12,
+    paddingVertical: 10,
+    marginRight: 8,
     maxHeight: 100,
     fontSize: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f8f9fa',
   },
   sendButton: {
     backgroundColor: Colors.light.primary,

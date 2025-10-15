@@ -77,6 +77,9 @@ export default function SupportScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Help & Support</Text>
       </View>
 
@@ -159,6 +162,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  backButton: {
+    marginRight: 12,
+    padding: 4,
   },
   headerTitle: {
     fontSize: 18,

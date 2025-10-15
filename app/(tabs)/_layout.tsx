@@ -91,6 +91,12 @@ export default function TabLayout() {
           title: 'Support',
           tabBarIcon: ({ color, size }) => <Ionicons name="headset" size={size} color={color} />,
         }}
+        listeners={{
+          tabPress: (e) => {
+            e.preventDefault();
+            require('expo-router').router.push('/support');
+          },
+        }}
       />
       <Tabs.Screen
         name="profile"
