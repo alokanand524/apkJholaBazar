@@ -1,16 +1,16 @@
+import { useCartReminder } from '@/hooks/useCartReminder';
+import { useTheme } from '@/hooks/useTheme';
+import notificationService from '@/services/notificationService';
+import { persistor, store } from '@/store/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { store, persistor } from '@/store/store';
-import { useTheme } from '@/hooks/useTheme';
-import { useCartReminder } from '@/hooks/useCartReminder';
-import { useEffect } from 'react';
-import notificationService from '@/services/notificationService';
 
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';

@@ -1,13 +1,13 @@
+import { API_ENDPOINTS } from '@/constants/api';
+import { useTheme } from '@/hooks/useTheme';
+import { clearSelectedAddress, setSelectedAddress } from '@/store/slices/addressSlice';
+import { tokenManager } from '@/utils/tokenManager';
 import { Ionicons } from '@expo/vector-icons';
-import { router, Stack, useFocusEffect } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import { router, Stack } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/useTheme';
 import { useDispatch } from 'react-redux';
-import { setSelectedAddress, clearSelectedAddress } from '@/store/slices/addressSlice';
-import { tokenManager } from '@/utils/tokenManager';
-import { API_ENDPOINTS } from '@/constants/api';
 
 interface SavedAddress {
   id: string;

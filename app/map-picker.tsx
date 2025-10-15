@@ -24,6 +24,8 @@ interface LocationData {
 
 const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsApiKey || process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 'AIzaSyA_0odOsTGuRjXcgoq_D7_ZBNuCxblh2a0';
 
+console.log('🔑 Google Maps API Key:', GOOGLE_MAPS_API_KEY ? 'Found' : 'Missing');
+
 export default function MapPickerScreen() {
   const { colors } = useTheme();
   const dispatch = useDispatch();
@@ -311,25 +313,7 @@ export default function MapPickerScreen() {
     }
   };
 
-  const handleRegionChange = async (newRegion: Region) => {
-    // Only reverse geocode if significant movement (>15 meters)
-    const lastLoc = lastLocationRef.current;
-    if (lastLoc) {
-      const distance = Math.sqrt(
-        Math.pow((newRegion.latitude - lastLoc.lat) * 111000, 2) + 
-        Math.pow((newRegion.longitude - lastLoc.lng) * 111000, 2)
-      );
-      if (distance < 15) return; // 15 meters threshold
-    }
-    
-    lastLocationRef.current = { lat: newRegion.latitude, lng: newRegion.longitude };
-    
-    // Get address for where the pin is pointing (center of map)
-    const locationData = await reverseGeocode(newRegion.latitude, newRegion.longitude);
-    if (locationData) {
-      setSelectedLocation(locationData);
-    }
-  };
+
 
   const handleLocationSelect = async () => {
     if (selectedLocation) {
@@ -420,17 +404,19 @@ export default function MapPickerScreen() {
               ref={mapRef}
               style={styles.map}
               region={region}
-              onRegionChangeComplete={handleRegionChange}
+              onRegionChangeComplete={(newRegion) => {
+                setRegion(newRegion);
+                const locationData = reverseGeocode(newRegion.latitude, newRegion.longitude);
+                if (locationData) {
+                  locationData.then(data => data && setSelectedLocation(data));
+                }
+              }}
               showsUserLocation={true}
               showsMyLocationButton={false}
               followsUserLocation={false}
               showsCompass={false}
               rotateEnabled={false}
               pitchEnabled={false}
-              provider="google"
-              googleMapId="d7dbe4466e14a53468353632"
-              userLocationUpdateInterval={3000}
-              userLocationFastestInterval={2000}
             />
             
             <View style={styles.centerMarker}>
@@ -493,13 +479,18 @@ export default function MapPickerScreen() {
         <View style={styles.locationDetails}>
           <Text style={[styles.locationTitle, { color: colors.text }]}>Deliver to</Text>
           {selectedLocation ? (
-            <Text 
-              style={[styles.locationText, { color: colors.text }]} 
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {selectedLocation.locality}, {selectedLocation.district}, {selectedLocation.pincode}
-            </Text>
+            <>
+              <Text 
+                style={[styles.locationText, { color: colors.text }]} 
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {selectedLocation.locality}, {selectedLocation.district}, {selectedLocation.pincode}
+              </Text>
+              <Text style={[{ color: colors.gray, fontSize: 12, marginTop: 4 }]}>
+                📍 {selectedLocation.latitude.toFixed(4)}, {selectedLocation.longitude.toFixed(4)}
+              </Text>
+            </>
           ) : (
             <Text style={[styles.locationText, { color: colors.gray }]}>Loading location...</Text>
           )}
