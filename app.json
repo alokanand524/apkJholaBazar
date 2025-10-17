@@ -18,7 +18,7 @@
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.jholabazar.app",
-      "googleServicesFile": "./android/app/google-services.json",
+      "googleServicesFile": "$GOOGLE_SERVICES_JSON",
       "config": {
         "googleMaps": {
           "apiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
