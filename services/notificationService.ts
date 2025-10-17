@@ -1,11 +1,17 @@
-import Constants from 'expo-constants';
-import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
 import { config } from '@/config/env';
 import { logger } from '@/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
+
+// Register background handler for FCM
+messaging().setBackgroundMessageHandler(async remoteMessage => {
+  console.log('📱 FCM Background Message:', remoteMessage);
+});
 
 // Configure notification behavior for receiving API notifications only
 Notifications.setNotificationHandler({
@@ -15,6 +21,8 @@ Notifications.setNotificationHandler({
       shouldShowAlert: true,
       shouldPlaySound: true,
       shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
     };
   },
 });
@@ -35,6 +43,9 @@ class NotificationService {
       return;
     }
 
+    // Add delay for APK builds to ensure proper initialization
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
     
@@ -49,17 +60,49 @@ class NotificationService {
     }
 
     try {
-      const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      // Enhanced project ID detection for APK builds
+      const projectId = 
+        Constants?.expoConfig?.extra?.eas?.projectId ?? 
+        Constants?.easConfig?.projectId ??
+        Constants?.manifest?.extra?.eas?.projectId ??
+        'c77f147a-c2bd-4d7e-b3bc-91f3eaa0ae24'; // Fallback to your project ID
+      
       if (!projectId) {
         throw new Error('Project ID not found');
       }
       
-      const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+      console.log('🔑 Using Project ID:', projectId);
+      
+      // For APK builds, try to get FCM token first, fallback to Expo token
+      let tokenData;
+      try {
+        // Check if running in standalone app (APK)
+        if (Constants.executionEnvironment === 'standalone') {
+          const fcmToken = await messaging().getToken();
+          tokenData = { data: fcmToken, type: 'fcm' };
+          console.log('🔥 Using FCM token for APK build:', fcmToken.substring(0, 50) + '...');
+        } else {
+          tokenData = await Notifications.getExpoPushTokenAsync({ 
+            projectId,
+            applicationId: 'com.jholabazar.app'
+          });
+          console.log('📱 Using Expo token for development');
+        }
+      } catch (fcmError) {
+        console.log('⚠️ FCM failed, falling back to Expo token:', fcmError instanceof Error ? fcmError.message : String(fcmError));
+        tokenData = await Notifications.getExpoPushTokenAsync({ 
+          projectId,
+          applicationId: 'com.jholabazar.app'
+        });
+      }
+      
+      const token = tokenData.data;
       this.pushToken = token;
       
       // Log the token for debugging
       console.log('🔑 EXPO PUSH TOKEN:', token);
-      logger.info('Push token obtained', { token });
+      console.log('🔑 Token Type:', tokenData.type);
+      logger.info('Push token obtained', { token, type: tokenData.type });
       
       // Only save token to backend if user is authenticated
       const authToken = await AsyncStorage.getItem('authToken');
@@ -70,16 +113,37 @@ class NotificationService {
         logger.info('Push token obtained but not sent - user not authenticated');
       }
     } catch (error) {
-      logger.error('Error getting push token', { error: error.message });
+      logger.error('Error getting push token', { error: error instanceof Error ? error.message : String(error) });
     }
 
     if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
-        importance: Notifications.AndroidImportance.MAX,
-        vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
-      });
+      // Create multiple notification channels for different types
+      await Promise.all([
+        Notifications.setNotificationChannelAsync('default', {
+          name: 'Default Notifications',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#00B761',
+          sound: 'default',
+          enableVibrate: true,
+        }),
+        Notifications.setNotificationChannelAsync('cart_reminder', {
+          name: 'Cart Reminders',
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#00B761',
+          sound: 'default',
+        }),
+        Notifications.setNotificationChannelAsync('order_updates', {
+          name: 'Order Updates',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 500, 250, 500],
+          lightColor: '#00B761',
+          sound: 'default',
+        })
+      ]);
+      
+      console.log('🔔 Android notification channels created');
     }
   }
 
@@ -120,7 +184,7 @@ class NotificationService {
         logger.warn('Failed to save push token to backend', { status: response.status });
       }
     } catch (error) {
-      logger.error('Error saving push token to backend', { error: error.message });
+      logger.error('Error saving push token to backend', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -141,7 +205,7 @@ class NotificationService {
       await AsyncStorage.removeItem('pushTokenSent');
       logger.info('Push token removed from backend and flag cleared');
     } catch (error) {
-      logger.error('Error removing push token from backend', { error: error.message });
+      logger.error('Error removing push token from backend', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -222,7 +286,7 @@ class NotificationService {
       }
     } catch (error) {
       console.log('❌ Navigation error:', error);
-      logger.error('Navigation error from notification', { error: error.message });
+      logger.error('Navigation error from notification', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 

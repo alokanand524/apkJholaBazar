@@ -4,23 +4,21 @@
     "slug": "jhola-bazar",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/jhola-bazar1.png",
+    "icon": "./assets/images/app_icon_logo.png",
     "scheme": "jholabazar",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/jhola-bazar1.png",
-        "backgroundImage": "./assets/images/jhola-bazar.png",
-        "monochromeImage": "./assets/images/jhola-bazar.png"
-      },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.jholabazar.app",
+      "googleServicesFile": "./android/app/google-services.json",
       "config": {
         "googleMaps": {
           "apiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_API_KEY"
@@ -33,19 +31,23 @@
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.WAKE_LOCK"
-      ]
+        "android.permission.WAKE_LOCK",
+        "android.permission.POST_NOTIFICATIONS",
+        "com.google.android.c2dm.permission.RECEIVE",
+        "android.permission.FOREGROUND_SERVICE"
+      ],
+      "allowBackup": false
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/jhola-bazar1.png"
+      "favicon": "./assets/images/app_icon_logo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-screen.png",
+          "image": "./assets/images/app_icon_logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff",
@@ -59,7 +61,16 @@
         {
           "locationAlwaysAndWhenInUsePermission": "This app needs access to location to show nearby stores and delivery options."
         }
-      ]
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/app_notification.png",
+          "color": "#fffae6",
+          "defaultChannel": "default"
+        }
+      ],
+      "@react-native-firebase/app"
     ],
     "experiments": {
       "typedRoutes": true,

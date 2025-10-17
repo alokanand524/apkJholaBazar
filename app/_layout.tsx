@@ -1,6 +1,7 @@
 import { useCartReminder } from '@/hooks/useCartReminder';
 import { useTheme } from '@/hooks/useTheme';
 import notificationService from '@/services/notificationService';
+import { testNotificationSetup } from '@/utils/notificationTest';
 import { persistor, store } from '@/store/store';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -22,6 +23,14 @@ function AppContent() {
   useEffect(() => {
     // Initialize notification service
     notificationService.initialize();
+    
+    // Test notification setup in development/APK builds
+    if (__DEV__ || process.env.NODE_ENV !== 'production') {
+      setTimeout(async () => {
+        const testResult = await testNotificationSetup();
+        console.log('🧪 Notification Test Result:', testResult);
+      }, 3000);
+    }
     
     // Check for existing cart items and schedule reminders if needed
     setTimeout(() => {
